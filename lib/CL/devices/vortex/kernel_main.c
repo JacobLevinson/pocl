@@ -26,5 +26,5 @@ int main(void) {
   uint32_t aligned_kernel_args_size = alignOffset2(sizeof(kernel_args_t), sizeof(size_t));
   void* arg = (void*)((uint8_t*)kargs + aligned_kernel_args_size);
   vx_kernel_func_cb kernel_func = (vx_kernel_func_cb)__vx_get_kernel_callback(kargs->kernel_id);
-  return vx_spawn_threads(kargs->work_dim, kargs->num_groups, kargs->local_size, kernel_func, arg);
+  return vx_spawn_threads_spatial(kargs->work_dim, kargs->num_groups, kargs->local_size, kernel_func, arg);
 }
