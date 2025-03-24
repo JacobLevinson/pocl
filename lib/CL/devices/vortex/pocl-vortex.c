@@ -798,3 +798,79 @@ void pocl_vortex_notify (cl_device_id dev, cl_event event, cl_event finished) {
       return;
     }
 }
+
+// Spatial Malloc
+cl_int pocl_vortex_alloc_spatial_mem_obj(cl_device_id dev, cl_mem mem_obj, void *host_ptr,
+                                         int Dx, int Dy, int Dz, int Tx, int Ty, int Tz)
+{
+  int vx_err;
+  pocl_mem_identifier *p = &mem_obj->device_ptrs[dev->global_mem_id];
+
+  /* let other drivers preallocate */
+  if ((mem_obj->flags & CL_MEM_ALLOC_HOST_PTR) && (mem_obj->mem_host_ptr == NULL))
+    return CL_MEM_OBJECT_ALLOCATION_FAILURE;
+
+  p->extra_ptr = NULL;
+  p->version = 0;
+  p->extra = 0;
+
+  cl_mem_flags flags = mem_obj->flags;
+
+  if (flags & CL_MEM_USE_HOST_PTR)
+  {
+    POCL_ABORT("POCL_VORTEX_SPATIAL_MALLOC with USE_HOST_PTR is not supported!\n");
+  }
+  else
+  {
+    int vx_flags = 0;
+    if ((flags & CL_MEM_READ_WRITE) != 0)
+      vx_flags = VX_MEM_READ_WRITE;
+    else if ((flags & CL_MEM_READ_ONLY) != 0)
+      vx_flags = VX_MEM_READ;
+    else if ((flags & CL_MEM_WRITE_ONLY) != 0)
+      vx_flags = VX_MEM_WRITE;
+
+    vortex_device_data_t *dd = (vortex_device_data_t *)dev->data;
+
+    vx_buffer_h vx_buffer;
+    vx_err = vx_spatial_mem_alloc(dd->vx_device, mem_obj->size, vx_flags,
+                                  &vx_buffer, Dx, Dy, Dz, Tx, Ty, Tz);
+    if (vx_err != 0)
+    {
+      return CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    }
+
+    uint64_t buf_address;
+    vx_err = vx_mem_address(vx_buffer, &buf_address);
+    if (vx_err != 0)
+    {
+      vx_mem_free(vx_buffer);
+      return CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    }
+
+    if (host_ptr && (flags & CL_MEM_COPY_HOST_PTR))
+    {
+      vx_err = vx_copy_to_dev(vx_buffer, host_ptr, 0, mem_obj->size);
+      if (vx_err != 0)
+      {
+        vx_mem_free(vx_buffer);
+        return CL_MEM_OBJECT_ALLOCATION_FAILURE;
+      }
+    }
+
+    if (flags & CL_MEM_ALLOC_HOST_PTR)
+    {
+      /* malloc mem_host_ptr then increase refcount */
+      pocl_alloc_or_retain_mem_host_ptr(mem_obj);
+    }
+
+    vortex_buffer_data_t *buf_data = (vortex_buffer_data_t *)malloc(sizeof(vortex_buffer_data_t));
+    buf_data->vx_device = dd->vx_device;
+    buf_data->vx_buffer = vx_buffer;
+    buf_data->buf_address = buf_address;
+
+    p->mem_ptr = buf_data;
+  }
+
+  return CL_SUCCESS;
+}
