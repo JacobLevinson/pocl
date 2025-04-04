@@ -72,3 +72,5 @@ clCreateSpatialBuffer(cl_context context,
 
     return buffer;
 }
+
+POsym(clCreateSpatialBuffer)
