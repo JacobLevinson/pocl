@@ -798,6 +798,7 @@ void pocl_vortex_notify (cl_device_id dev, cl_event event, cl_event finished) {
 cl_int pocl_vortex_alloc_spatial_mem_obj(cl_device_id dev, cl_mem mem_obj, void *host_ptr,
                                          int Dx, int Dy, int Dz, int Tx, int Ty, int Tz)
 {
+  fprintf(stderr, "[pocl_vortex_alloc_spatial_mem_obj] Spatial buffer created!\n");
   int vx_err;
   pocl_mem_identifier *p = &mem_obj->device_ptrs[dev->global_mem_id];
 

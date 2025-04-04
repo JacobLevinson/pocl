@@ -12,28 +12,63 @@ clCreateSpatialBuffer(cl_context context,
                       int Tx, int Ty, int Tz,
                       cl_int *errcode_ret)
 {
+    cl_int errcode = CL_SUCCESS;
+    cl_mem buffer = NULL;
 
-    cl_int err;
-    cl_mem buffer = pocl_create_memobject(context, flags, size, NULL, &err);
-    if (err != CL_SUCCESS)
+    buffer = pocl_create_memobject(context,
+                                   flags,
+                                   size,
+                                   CL_MEM_OBJECT_BUFFER,
+                                   NULL,
+                                   NULL,
+                                   CL_FALSE,
+                                   &errcode);
+    fprintf(stderr, "[clCreateSpatialBuffer] Spatial buffer created!\n");
+    if (buffer == NULL)
     {
         if (errcode_ret)
-            *errcode_ret = err;
+            *errcode_ret = errcode;
         return NULL;
     }
 
-    cl_device_id device = context->devices[0]; // assuming single-device context
+    cl_device_id device = context->devices[0];
 
-    err = pocl_vortex_alloc_spatial_mem_obj(device, buffer, NULL, Dx, Dy, Dz, Tx, Ty, Tz);
-    if (err != CL_SUCCESS)
+    if (device->ops->alloc_spatial_mem_obj)
     {
-        pocl_memobj_destructor(buffer);
+        errcode = device->ops->alloc_spatial_mem_obj(device, buffer, NULL, Dx, Dy, Dz, Tx, Ty, Tz);
+    }
+    else
+    {
+        errcode = CL_INVALID_OPERATION;
+    }
+
+    if (errcode != CL_SUCCESS)
+    {
+        // Do manual cleanup matching POCL's style
+        if (buffer->device_ptrs)
+        {
+            for (unsigned i = 0; i < context->num_devices; ++i)
+            {
+                cl_device_id dev = context->devices[i];
+                pocl_mem_identifier *p = &buffer->device_ptrs[dev->global_mem_id];
+                if (p->mem_ptr)
+                    dev->ops->free(dev, buffer);
+            }
+            POCL_MEM_FREE(buffer->device_ptrs);
+        }
+
+        if (((flags & CL_MEM_USE_HOST_PTR) == 0) && buffer->mem_host_ptr)
+            POCL_MEM_FREE(buffer->mem_host_ptr);
+
+        POCL_MEM_FREE(buffer);
+
         if (errcode_ret)
-            *errcode_ret = err;
+            *errcode_ret = errcode;
         return NULL;
     }
 
     if (errcode_ret)
         *errcode_ret = CL_SUCCESS;
+
     return buffer;
 }

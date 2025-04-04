@@ -359,6 +359,9 @@ typedef struct pocl_argument_info {
 struct pocl_device_ops {
   const char *device_name;
 
+  cl_int (*alloc_spatial_mem_obj)(cl_device_id dev, cl_mem mem_obj, void *host_ptr,
+                                  int Dx, int Dy, int Dz, int Tx, int Ty, int Tz);
+
   /* New driver api extension for out-of-order execution and
      asynchronous devices.
      See this for reference: http://URN.fi/URN:NBN:fi:tty-201412051583
