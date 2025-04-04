@@ -1,6 +1,8 @@
+#include "common.h"
+#include "devices/vortex/pocl-vortex.h"
 #include "pocl_cl.h"
+#include "pocl_shared.h"
 #include "pocl_util.h"
-#include "devices/pocl-vortex.h"
 
 CL_API_ENTRY cl_mem CL_API_CALL
 clCreateSpatialBuffer(cl_context context,
