@@ -5,12 +5,13 @@
 #include "pocl_util.h"
 
 CL_API_ENTRY cl_mem CL_API_CALL
-clCreateSpatialBuffer(cl_context context,
-                      cl_mem_flags flags,
-                      size_t size,
-                      int Dx, int Dy, int Dz,
-                      int Tx, int Ty, int Tz,
-                      cl_int *errcode_ret)
+POname(clCreateSpatialBuffer)(
+    cl_context context,
+    cl_mem_flags flags,
+    size_t size,
+    int Dx, int Dy, int Dz,
+    int Tx, int Ty, int Tz,
+    cl_int *errcode_ret) CL_API_SUFFIX__VERSION_1_0
 {
     cl_int errcode = CL_SUCCESS;
     cl_mem buffer = NULL;

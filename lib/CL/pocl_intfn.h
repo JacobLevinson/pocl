@@ -32,10 +32,20 @@
 extern "C" {
 #endif
 
+/* Add this near the top of pocl_intfn.h, with the others */
+CL_API_ENTRY cl_mem CL_API_CALL clCreateSpatialBuffer(
+    cl_context context,
+    cl_mem_flags flags,
+    size_t size,
+    int Dx, int Dy, int Dz,
+    int Tx, int Ty, int Tz,
+    cl_int *errcode_ret);
+
 POdeclsym(clBuildProgram)
 POdeclsym(clLinkProgram)
 POdeclsym(clCompileProgram)
 POdeclsymExport(clCreateBuffer)
+POdeclsymExport(clCreateSpatialBuffer)
 POdeclsym(clCreateCommandQueue)
 POdeclsymExport(clCreateContext)
 POdeclsym(clCreateContextFromType)

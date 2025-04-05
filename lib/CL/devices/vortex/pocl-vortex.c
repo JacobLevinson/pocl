@@ -120,6 +120,8 @@ void pocl_vortex_init_device_ops(struct pocl_device_ops *ops) {
 
   ops->get_mapping_ptr = pocl_driver_get_mapping_ptr;
   ops->free_mapping_ptr = pocl_driver_free_mapping_ptr;
+
+  ops->alloc_spatial_mem_obj = pocl_vortex_alloc_spatial_mem_obj;
 }
 
 char * pocl_vortex_build_hash (cl_device_id dev)
