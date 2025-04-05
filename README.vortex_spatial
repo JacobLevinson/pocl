@@ -1,0 +1,14 @@
+## build POCL runtime
+- git clone --recursive https://github.com/vortexgpgpu/pocl
+- cd pocl
+Switch to vortex_2.x_spatial branch
+- mkdir build && cd build
+GO to your vortex directory and source ../configure --xlen=32 --tooldir=$HOME/tools + ./ci/toolchain_env.sh + make -s and then make install
+back to pocl/build:
+- export POCL_PATH=$TOOLDIR/pocl-spatial #where your pocl will install
+- export VORTEX_PREFIX=<path to your spatial vortex>/build
+- xport LLVM_PREFIX=$TOOLDIR/llvm-vortex
+- cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$POCL_PATH -DWITH_LLVM_CONFIG=$LLVM_PREFIX/bin/llvm-config -DVORTEX_PREFIX=$VORTEX_PREFIX -DENABLE_VORTEX=ON -DKERNEL_CACHE_DEFAULT=OFF -DENABLE_HOST_CPU_DEVICES=OFF -DENABLE_TESTS=OFF -DPOCL_DEBUG_MESSAGES=ON -DENABLE_ICD=OFF -DINSTALL_OPENCL_HEADERS=ON ..
+- make -j`nproc`
+- make install
+- cp -r ../include $POCL_PATH
